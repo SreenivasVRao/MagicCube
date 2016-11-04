@@ -47,10 +47,12 @@ class Cube:
     """Magic Cube Representation"""
     # define some attribues
     default_plastic_color = 'black'
+    
     default_face_colors = ["w", "#ffcf00",
                            "#00008f", "#009f0f",
                            "#ff6f00", "#cf0000",
                            "gray", "none"]
+    
     base_face = np.array([[1, 1, 1],
                           [1, -1, 1],
                           [-1, -1, 1],
@@ -292,6 +294,41 @@ class InteractiveCube(plt.Axes):
         self._btn_solve = widgets.Button(self._ax_solve, 'Solve Cube')
         self._btn_solve.on_clicked(self._solve_cube)
 
+        self._ax_alt_solve = self.figure.add_axes([0.05, 0.15, 0.4, 0.075])
+        self._btn_alt_solve = widgets.Button(self._ax_alt_solve, 'Alternate Solution')
+        self._btn_alt_solve.on_clicked(self._alt_solution)
+
+        self._ax_alt_scramble = self.figure.add_axes([0.55, 0.15, 0.4, 0.075])
+        self._btn_alt_scramble = widgets.Button(self._ax_alt_scramble, 'Rescramble')
+        self._btn_alt_scramble.on_clicked(self._implement_scramble)
+
+    def _implement_scramble(self, *args):
+        import pickle
+        with open('Scramble.p', 'rb') as f:
+            move_set = pickle.load(f)
+        for m in move_set:
+            if m[1] == 0:
+                self.rotate_face(m[0].upper(), steps= 2)
+            elif m[1] == -1:
+                self.rotate_face(m[0].upper(), -1, steps= 2)
+
+
+    def _alt_solution(self, *args):
+        import pickle
+        with open('MagicCubeSolution.p', 'rb') as f:
+            move_set = pickle.load(f)
+
+        with open('Singmaster.p', 'rb') as f:
+            solution = pickle.load(f)
+        print 'Solution:', solution
+        for m in move_set:
+            if m[1] == 0:
+                self.rotate_face(m[0].upper(), steps= 20)
+            elif m[1] == -1:
+                self.rotate_face(m[0].upper(), -1, steps= 20)
+
+
+
     def _project(self, pts):
         return project_points(pts, self._current_rot, self._view, [0, 1, 0])
 
@@ -352,8 +389,8 @@ class InteractiveCube(plt.Axes):
 
     def _solve_cube(self, *args):
         move_list = self.cube._move_list[:]
-        for (face, n, layer) in move_list[::-1]:
-            self.rotate_face(face, -n, layer, steps=3)
+    	for (face, n, layer) in move_list[::-1]:
+            self.rotate_face(face, -n, layer, steps=10)
         self.cube._move_list = []
 
     def _key_press(self, event):
